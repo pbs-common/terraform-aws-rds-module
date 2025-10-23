@@ -2,7 +2,7 @@ resource "aws_db_proxy" "proxy" {
   count                  = var.use_proxy ? 1 : 0
   name                   = local.proxy_name
   debug_logging          = var.proxy_debug_logging
-  engine_family          = var.proxy_engine_family
+  engine_family          = local.proxy_engine_family
   idle_client_timeout    = var.proxy_idle_client_timeout
   require_tls            = var.proxy_require_tls
   role_arn               = aws_iam_role.proxy_role[0].arn

@@ -16,7 +16,7 @@ resource "aws_rds_cluster" "db" {
   port                            = var.port
   final_snapshot_identifier       = var.final_snapshot_identifier
   snapshot_identifier             = var.snapshot_identifier
-  db_cluster_parameter_group_name = var.db_cluster_parameter_group_name
+  db_cluster_parameter_group_name = local.db_cluster_parameter_group_name
   storage_encrypted               = true
 
   deletion_protection = var.deletion_protection
