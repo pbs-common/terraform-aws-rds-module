@@ -265,12 +265,6 @@ variable "db_cluster_parameter_group_name" {
   type        = string
 }
 
-variable "create_parameter_group" {
-  description = "Whether to create a DB instance parameter group"
-  default     = true
-  type        = bool
-}
-
 variable "db_cluster_parameters" {
   type        = map(string)
   description = "Optional key-value map of parameters to override for the cluster parameter group"
