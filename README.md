@@ -134,11 +134,11 @@ No modules.
 | <a name="input_db_instance_parameters"></a> [db\_instance\_parameters](#input\_db\_instance\_parameters) | Optional key-value map of parameters to override for the instance parameter group | `map(string)` | `{}` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Deletion protection | `bool` | `true` | no |
 | <a name="input_dns_ttl"></a> [dns\_ttl](#input\_dns\_ttl) | TTL for DNS record | `number` | `300` | no |
-| <a name="input_egress_cidr_blocks"></a> [egress\_cidr\_blocks](#input\_egress\_cidr\_blocks) | List of CIDR blocks to assign to the egress rule of the security group. If null, `egress_security_group_ids` must be used. | `list(string)` | <pre>[<br>  "10.0.0.0/8"<br>]</pre> | no |
+| <a name="input_egress_cidr_blocks"></a> [egress\_cidr\_blocks](#input\_egress\_cidr\_blocks) | List of CIDR blocks to assign to the egress rule of the security group. If null, `egress_security_group_ids` must be used. | `list(string)` | <pre>[<br/>  "10.0.0.0/8"<br/>]</pre> | no |
 | <a name="input_egress_source_sg_id"></a> [egress\_source\_sg\_id](#input\_egress\_source\_sg\_id) | List of security group ID to assign to the egress rule of the security group. If null, `egress_cidr_blocks` must be used. | `string` | `null` | no |
 | <a name="input_engine"></a> [engine](#input\_engine) | Engine to use for the DB | `string` | `"aurora-postgresql"` | no |
 | <a name="input_engine_mode"></a> [engine\_mode](#input\_engine\_mode) | Engine mode of the RDS cluster | `string` | `"provisioned"` | no |
-| <a name="input_engine_preferred_versions"></a> [engine\_preferred\_versions](#input\_engine\_preferred\_versions) | Engine preferred versions of the RDS cluster | `list(string)` | <pre>[<br>  "17.5"<br>]</pre> | no |
+| <a name="input_engine_preferred_versions"></a> [engine\_preferred\_versions](#input\_engine\_preferred\_versions) | Engine preferred versions of the RDS cluster | `list(string)` | <pre>[<br/>  "17.5"<br/>]</pre> | no |
 | <a name="input_engine_version"></a> [engine\_version](#input\_engine\_version) | Engine version of the RDS cluster | `string` | `"17.5"` | no |
 | <a name="input_final_snapshot_identifier"></a> [final\_snapshot\_identifier](#input\_final\_snapshot\_identifier) | Final snapshot identifier | `string` | `null` | no |
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance class | `string` | `"db.serverless"` | no |
