@@ -71,7 +71,7 @@ resource "aws_secretsmanager_secret_version" "proxy_secret_version" {
   secret_string = jsonencode({
     username            = local.proxy_username,
     password            = local.proxy_password,
-    engine              = lower(var.proxy_engine_family)
+    engine              = lower(local.proxy_engine_family),
     host                = aws_rds_cluster.db.endpoint
     dbClusterIdentifier = aws_rds_cluster.db.id
   })
@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "proxy_policy" {
       variable = "kms:ViaService"
 
       values = [
-        "secretsmanager.${data.aws_region.current.name}.amazonaws.com",
+        "secretsmanager.${data.aws_region.current.region}.amazonaws.com",
       ]
     }
   }

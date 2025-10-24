@@ -39,3 +39,18 @@ output "admin_sg_id" {
   description = "The security group id for performing administrative tasks on the database. If use_proxy is false, this is the same as sg_id"
   value       = aws_security_group.sg.id
 }
+
+output "cluster_parameter_group_name" {
+  value       = aws_rds_cluster_parameter_group.this.name
+  description = "The name of the cluster parameter group"
+}
+
+output "instance_parameter_group_name" {
+  value       = aws_db_parameter_group.this.name
+  description = "The name of the instance parameter group"
+}
+
+output "parameter_group_family" {
+  value       = local.parameter_group_family
+  description = "The family type of the parameter groups"
+}

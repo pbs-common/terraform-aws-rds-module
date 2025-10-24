@@ -24,7 +24,7 @@ variable "port" {
 
 variable "db_admin_username" {
   description = "Admin username for the DB"
-  default     = "admin"
+  default     = "root"
   type        = string
   sensitive   = true
 }
@@ -44,7 +44,7 @@ variable "use_prefix" {
 
 variable "engine" {
   description = "Engine to use for the DB"
-  default     = "aurora-mysql"
+  default     = "aurora-postgresql"
   type        = string
 }
 
@@ -60,12 +60,12 @@ variable "engine_mode" {
 
 variable "engine_version" {
   description = "Engine version of the RDS cluster"
-  default     = "14.6" # Use a valid version for Serverless v2
+  default     = "17.5" # Use a valid version for Serverless v2
   type        = string
 
   validation {
     condition = (
-      can(regex("^1[4-9]\\..*$", var.engine_version))           # PostgreSQL
+      can(regex("^(1[4-9]|2[0-9])\\..*$", var.engine_version))  # PostgreSQL
       || can(regex("^8.*.mysql_aurora.*$", var.engine_version)) # Aurora MySQL
       || can(regex("^8.*$", var.engine_version))                # MySQL 8
       || can(regex("^5.7$", var.engine_version))                # MySQL 5.7
@@ -76,7 +76,7 @@ variable "engine_version" {
 
 variable "engine_preferred_versions" {
   description = "Engine preferred versions of the RDS cluster"
-  default     = ["8.0.mysql_aurora.3.02.0"]
+  default     = ["17.5"]
   type        = list(string)
 }
 
@@ -105,7 +105,7 @@ variable "min_capacity" {
 
 variable "max_capacity" {
   description = "Maximum capacity for the cluster"
-  default     = 16
+  default     = 8
   type        = number
 }
 
@@ -193,16 +193,6 @@ variable "proxy_debug_logging" {
   type        = bool
 }
 
-variable "proxy_engine_family" {
-  description = "Engine family for RDS proxy"
-  default     = "MYSQL"
-  type        = string
-  validation {
-    condition     = contains(["MYSQL", "POSTGRESQL"], var.proxy_engine_family)
-    error_message = "The engine family must be either MYSQL or POSTGRESQL."
-  }
-}
-
 variable "proxy_idle_client_timeout" {
   description = "Idle client timeout for RDS proxy"
   default     = 1800
@@ -273,4 +263,16 @@ variable "db_cluster_parameter_group_name" {
   description = "DB cluster parameter group name"
   default     = null
   type        = string
+}
+
+variable "db_cluster_parameters" {
+  type        = map(string)
+  description = "Optional key-value map of parameters to override for the cluster parameter group"
+  default     = {}
+}
+
+variable "db_instance_parameters" {
+  type        = map(string)
+  description = "Optional key-value map of parameters to override for the instance parameter group"
+  default     = {}
 }

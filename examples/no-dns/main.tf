@@ -12,4 +12,5 @@ module "rds" {
   environment  = var.environment
   product      = var.product
   repo         = var.repo
+  owner        = var.owner
 }
