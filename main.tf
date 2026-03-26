@@ -17,7 +17,8 @@ resource "aws_rds_cluster" "db" {
   final_snapshot_identifier       = var.final_snapshot_identifier
   snapshot_identifier             = var.snapshot_identifier
   db_cluster_parameter_group_name = local.db_cluster_parameter_group_name
-  storage_encrypted               = true
+  storage_encrypted               = var.storage_encrypted
+  copy_tags_to_snapshot           = var.copy_tags_to_snapshot
 
   deletion_protection = var.deletion_protection
   skip_final_snapshot = var.skip_final_snapshot

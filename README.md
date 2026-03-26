@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.0.1
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.0.1"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -47,7 +47,7 @@ module "rds" {
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.0.1`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -71,7 +71,7 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.35.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.37.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.7.2 |
 
 ## Modules
@@ -126,6 +126,7 @@ No modules.
 | <a name="input_apply_immediately"></a> [apply\_immediately](#input\_apply\_immediately) | Apply changes immediately. If false, will apply updates during the next maintenance window. | `bool` | `false` | no |
 | <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | Availability zones to be used by this RDS cluster | `list(string)` | `null` | no |
 | <a name="input_backup_retention_period"></a> [backup\_retention\_period](#input\_backup\_retention\_period) | Backup retention period | `number` | `7` | no |
+| <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
 | <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB | `string` | `null` | no |
 | <a name="input_db_admin_username"></a> [db\_admin\_username](#input\_db\_admin\_username) | Admin username for the DB | `string` | `"root"` | no |
@@ -162,6 +163,7 @@ No modules.
 | <a name="input_seconds_until_auto_pause"></a> [seconds\_until\_auto\_pause](#input\_seconds\_until\_auto\_pause) | (Optional) Time, in seconds, before an Aurora DB cluster in provisioned DB engine mode is paused. Valid values are 300 through 86400 | `number` | `300` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Skip final snapshot | `bool` | `false` | no |
 | <a name="input_snapshot_identifier"></a> [snapshot\_identifier](#input\_snapshot\_identifier) | Snapshot identifier | `string` | `null` | no |
+| <a name="input_storage_encrypted"></a> [storage\_encrypted](#input\_storage\_encrypted) | Whether to enable storage encryption for the RDS cluster | `bool` | `true` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Extra tags | `map(string)` | `{}` | no |
 | <a name="input_use_prefix"></a> [use\_prefix](#input\_use\_prefix) | Create bucket with prefix instead of explicit name | `bool` | `true` | no |
 | <a name="input_use_proxy"></a> [use\_proxy](#input\_use\_proxy) | Use RDS proxy | `bool` | `false` | no |
