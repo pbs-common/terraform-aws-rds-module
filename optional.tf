@@ -276,3 +276,15 @@ variable "db_instance_parameters" {
   description = "Optional key-value map of parameters to override for the instance parameter group"
   default     = {}
 }
+
+variable "storage_encrypted" {
+  description = "Whether to enable storage encryption for the RDS cluster"
+  default     = true
+  type        = bool
+}
+
+variable "copy_tags_to_snapshot" {
+  description = "Whether to copy tags to snapshots"
+  default     = true
+  type        = bool
+}
