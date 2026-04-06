@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.0.2
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.0.2"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -47,7 +47,7 @@ module "rds" {
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.0.2`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -71,8 +71,8 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.37.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.7.2 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.39.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.8.1 |
 
 ## Modules
 
