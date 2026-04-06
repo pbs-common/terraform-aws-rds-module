@@ -1,5 +1,5 @@
 resource "aws_rds_cluster_parameter_group" "this" {
-  name        = "${local.name}-${local.parameter_group_family}"
+  name        = "${local.name}-${local.parameter_group_name_suffix}"
   family      = local.parameter_group_family
   description = "RDS Cluster parameter group for ${local.name}"
 
@@ -20,7 +20,7 @@ resource "aws_rds_cluster_parameter_group" "this" {
 }
 
 resource "aws_db_parameter_group" "this" {
-  name        = "${local.name}-${local.parameter_group_family}"
+  name        = "${local.name}-${local.parameter_group_name_suffix}"
   description = "RDS Instance parameter group for ${local.name}"
   family      = local.parameter_group_family
 

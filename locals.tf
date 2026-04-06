@@ -29,7 +29,8 @@ locals {
     var.engine == "aurora" ? "aurora5.6" : null
   )
 
-  proxy_engine_family = var.engine == "aurora-postgresql" ? "POSTGRESQL" : "MYSQL"
+  parameter_group_name_suffix = replace(local.parameter_group_family, ".", "-")
+  proxy_engine_family         = var.engine == "aurora-postgresql" ? "POSTGRESQL" : "MYSQL"
 
   sg_id = var.use_proxy ? aws_security_group.proxy_sg[0].id : aws_security_group.sg.id
 
