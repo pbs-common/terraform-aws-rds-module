@@ -265,6 +265,85 @@ variable "db_cluster_parameter_group_name" {
   type        = string
 }
 
+variable "db_cluster_parameter_group_description" {
+  description = "Description for the RDS cluster parameter group. Defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "db_instance_parameter_group_description" {
+  description = "Description for the RDS instance parameter group. Defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "db_cluster_parameter_group_resource_name" {
+  description = "Name of the aws_rds_cluster_parameter_group resource. Defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "db_instance_parameter_group_resource_name" {
+  description = "Name of the aws_db_parameter_group resource. Defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "writer_identifier" {
+  description = "Explicit identifier for the writer instance. If null, defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "reader_identifier_prefix" {
+  description = "Prefix for reader instance identifiers. Reader names become prefix+(index+1). If null, defaults to a generated pattern."
+  default     = null
+  type        = string
+}
+
+variable "auto_minor_version_upgrade" {
+  description = "Whether to enable auto minor version upgrade for DB instances."
+  default     = true
+  type        = bool
+}
+
+variable "instance_copy_tags_to_snapshot" {
+  description = "Whether to copy tags to snapshots for DB instances."
+  default     = true
+  type        = bool
+}
+
+variable "subnet_group_name" {
+  description = "Explicit name for the DB subnet group. If set, overrides name_prefix."
+  default     = null
+  type        = string
+}
+
+variable "ingress_rules" {
+  description = "List of ingress rules to create on the DB security group. Each rule supports: description, from_port, to_port, protocol, cidr_blocks (list), source_security_group_id."
+  type = list(object({
+    description              = optional(string, "")
+    from_port                = number
+    to_port                  = number
+    protocol                 = optional(string, "tcp")
+    cidr_blocks              = optional(list(string), [])
+    source_security_group_id = optional(string, null)
+  }))
+  default = []
+}
+
+variable "sg_description" {
+  description = "Description for the DB security group. Defaults to a generated value."
+  default     = null
+  type        = string
+}
+
+variable "sg_name" {
+  description = "Explicit name for the DB security group. If set, overrides name_prefix."
+  default     = null
+  type        = string
+}
+
 variable "db_cluster_parameters" {
   type        = map(string)
   description = "Optional key-value map of parameters to override for the cluster parameter group"

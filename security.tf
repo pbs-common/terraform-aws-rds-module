@@ -1,7 +1,8 @@
 resource "aws_security_group" "sg" {
-  description = "Controls access to the ${local.name} DB"
+  description = var.sg_description != null ? var.sg_description : "Controls access to the ${local.name} DB"
   vpc_id      = local.vpc_id
-  name_prefix = "${local.name}-db-sg-"
+  name        = var.sg_name
+  name_prefix = var.sg_name == null ? "${local.name}-db-sg-" : null
 
   tags = merge(
     local.tags,
@@ -125,6 +126,19 @@ data "aws_iam_policy_document" "proxy_policy" {
       ]
     }
   }
+}
+
+resource "aws_security_group_rule" "ingress" {
+  for_each = { for idx, rule in var.ingress_rules : idx => rule }
+
+  security_group_id        = aws_security_group.sg.id
+  type                     = "ingress"
+  description              = each.value.description
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  protocol                 = each.value.protocol
+  cidr_blocks              = length(each.value.cidr_blocks) > 0 ? each.value.cidr_blocks : null
+  source_security_group_id = each.value.source_security_group_id
 }
 
 resource "aws_security_group" "proxy_sg" {
