@@ -25,6 +25,19 @@ resource "aws_security_group_rule" "egress" {
   cidr_blocks              = var.egress_source_sg_id == null ? var.egress_cidr_blocks : null
 }
 
+resource "aws_security_group_rule" "ingress" {
+  for_each = { for idx, rule in var.ingress_rules : idx => rule }
+
+  security_group_id        = aws_security_group.sg.id
+  type                     = "ingress"
+  description              = each.value.description
+  from_port                = each.value.from_port
+  to_port                  = each.value.to_port
+  protocol                 = each.value.protocol
+  cidr_blocks              = length(each.value.cidr_blocks) > 0 ? each.value.cidr_blocks : null
+  source_security_group_id = each.value.source_security_group_id
+}
+
 resource "aws_iam_role" "proxy_role" {
   count       = var.use_proxy ? 1 : 0
   name        = var.use_prefix ? null : local.proxy_name
@@ -128,18 +141,7 @@ data "aws_iam_policy_document" "proxy_policy" {
   }
 }
 
-resource "aws_security_group_rule" "ingress" {
-  for_each = { for idx, rule in var.ingress_rules : idx => rule }
 
-  security_group_id        = aws_security_group.sg.id
-  type                     = "ingress"
-  description              = each.value.description
-  from_port                = each.value.from_port
-  to_port                  = each.value.to_port
-  protocol                 = each.value.protocol
-  cidr_blocks              = length(each.value.cidr_blocks) > 0 ? each.value.cidr_blocks : null
-  source_security_group_id = each.value.source_security_group_id
-}
 
 resource "aws_security_group" "proxy_sg" {
   count       = var.use_proxy ? 1 : 0
