@@ -345,13 +345,13 @@ variable "sg_name" {
 }
 
 variable "db_cluster_parameters" {
-  type        = map(string)
+  type        = map(any)
   description = "Optional key-value map of parameters to override for the cluster parameter group"
   default     = {}
 }
 
 variable "db_instance_parameters" {
-  type        = map(string)
+  type        = map(any)
   description = "Optional key-value map of parameters to override for the instance parameter group"
   default     = {}
 }
@@ -366,4 +366,51 @@ variable "copy_tags_to_snapshot" {
   description = "Whether to copy tags to snapshots"
   default     = true
   type        = bool
+}
+
+
+variable "autoscaling_enabled" {
+  description = "Whether to enable Application Auto Scaling for RDS reader replicas."
+  default     = false
+  type        = bool
+}
+
+variable "autoscaling_min_capacity" {
+  description = "Minimum number of reader replicas for autoscaling."
+  default     = 1
+  type        = number
+}
+
+variable "autoscaling_max_capacity" {
+  description = "Maximum number of reader replicas for autoscaling."
+  default     = 2
+  type        = number
+}
+
+variable "autoscaling_metric_type" {
+  description = "Predefined metric to scale on. Valid values: \"cpu\" (RDSReaderAverageCPUUtilization) or \"connections\" (RDSReaderAverageDatabaseConnectionsUtilization)."
+  default     = "cpu"
+  type        = string
+  validation {
+    condition     = contains(["cpu", "connections"], var.autoscaling_metric_type)
+    error_message = "autoscaling_metric_type must be \"cpu\" or \"connections\"."
+  }
+}
+
+variable "autoscaling_target_value" {
+  description = "Target value for the autoscaling metric. For \"cpu\", this is a percentage (e.g. 50). For \"connections\", this is a percentage of max connections (e.g. 70)."
+  default     = 50
+  type        = number
+}
+
+variable "autoscaling_scale_in_cooldown" {
+  description = "Cooldown period in seconds before allowing a scale-in activity."
+  default     = 600
+  type        = number
+}
+
+variable "autoscaling_scale_out_cooldown" {
+  description = "Cooldown period in seconds before allowing a scale-out activity."
+  default     = 60
+  type        = number
 }

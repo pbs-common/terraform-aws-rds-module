@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.2.0
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.2.0"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -47,7 +47,7 @@ module "rds" {
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.2.0`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -71,7 +71,7 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.45.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.46.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.9.0 |
 
 ## Modules
@@ -82,6 +82,8 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_appautoscaling_policy.replicas](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_policy) | resource |
+| [aws_appautoscaling_target.replicas](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/appautoscaling_target) | resource |
 | [aws_db_parameter_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_parameter_group) | resource |
 | [aws_db_proxy.proxy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_proxy) | resource |
 | [aws_db_proxy_default_target_group.default_target_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_proxy_default_target_group) | resource |
@@ -126,6 +128,13 @@ No modules.
 | <a name="input_repo"></a> [repo](#input\_repo) | Tag used to point to the repo using this module | `string` | n/a | yes |
 | <a name="input_apply_immediately"></a> [apply\_immediately](#input\_apply\_immediately) | Apply changes immediately. If false, will apply updates during the next maintenance window. | `bool` | `false` | no |
 | <a name="input_auto_minor_version_upgrade"></a> [auto\_minor\_version\_upgrade](#input\_auto\_minor\_version\_upgrade) | Whether to enable auto minor version upgrade for DB instances. | `bool` | `true` | no |
+| <a name="input_autoscaling_enabled"></a> [autoscaling\_enabled](#input\_autoscaling\_enabled) | Whether to enable Application Auto Scaling for RDS reader replicas. | `bool` | `false` | no |
+| <a name="input_autoscaling_max_capacity"></a> [autoscaling\_max\_capacity](#input\_autoscaling\_max\_capacity) | Maximum number of reader replicas for autoscaling. | `number` | `2` | no |
+| <a name="input_autoscaling_metric_type"></a> [autoscaling\_metric\_type](#input\_autoscaling\_metric\_type) | Predefined metric to scale on. Valid values: "cpu" (RDSReaderAverageCPUUtilization) or "connections" (RDSReaderAverageDatabaseConnectionsUtilization). | `string` | `"cpu"` | no |
+| <a name="input_autoscaling_min_capacity"></a> [autoscaling\_min\_capacity](#input\_autoscaling\_min\_capacity) | Minimum number of reader replicas for autoscaling. | `number` | `1` | no |
+| <a name="input_autoscaling_scale_in_cooldown"></a> [autoscaling\_scale\_in\_cooldown](#input\_autoscaling\_scale\_in\_cooldown) | Cooldown period in seconds before allowing a scale-in activity. | `number` | `600` | no |
+| <a name="input_autoscaling_scale_out_cooldown"></a> [autoscaling\_scale\_out\_cooldown](#input\_autoscaling\_scale\_out\_cooldown) | Cooldown period in seconds before allowing a scale-out activity. | `number` | `60` | no |
+| <a name="input_autoscaling_target_value"></a> [autoscaling\_target\_value](#input\_autoscaling\_target\_value) | Target value for the autoscaling metric. For "cpu", this is a percentage (e.g. 50). For "connections", this is a percentage of max connections (e.g. 70). | `number` | `50` | no |
 | <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | Availability zones to be used by this RDS cluster | `list(string)` | `null` | no |
 | <a name="input_backup_retention_period"></a> [backup\_retention\_period](#input\_backup\_retention\_period) | Backup retention period | `number` | `7` | no |
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
@@ -135,10 +144,10 @@ No modules.
 | <a name="input_db_cluster_parameter_group_description"></a> [db\_cluster\_parameter\_group\_description](#input\_db\_cluster\_parameter\_group\_description) | Description for the RDS cluster parameter group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_cluster_parameter_group_name"></a> [db\_cluster\_parameter\_group\_name](#input\_db\_cluster\_parameter\_group\_name) | DB cluster parameter group name | `string` | `null` | no |
 | <a name="input_db_cluster_parameter_group_resource_name"></a> [db\_cluster\_parameter\_group\_resource\_name](#input\_db\_cluster\_parameter\_group\_resource\_name) | Name of the aws\_rds\_cluster\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
-| <a name="input_db_cluster_parameters"></a> [db\_cluster\_parameters](#input\_db\_cluster\_parameters) | Optional key-value map of parameters to override for the cluster parameter group | `map(string)` | `{}` | no |
+| <a name="input_db_cluster_parameters"></a> [db\_cluster\_parameters](#input\_db\_cluster\_parameters) | Optional key-value map of parameters to override for the cluster parameter group | `map(any)` | `{}` | no |
 | <a name="input_db_instance_parameter_group_description"></a> [db\_instance\_parameter\_group\_description](#input\_db\_instance\_parameter\_group\_description) | Description for the RDS instance parameter group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_instance_parameter_group_resource_name"></a> [db\_instance\_parameter\_group\_resource\_name](#input\_db\_instance\_parameter\_group\_resource\_name) | Name of the aws\_db\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
-| <a name="input_db_instance_parameters"></a> [db\_instance\_parameters](#input\_db\_instance\_parameters) | Optional key-value map of parameters to override for the instance parameter group | `map(string)` | `{}` | no |
+| <a name="input_db_instance_parameters"></a> [db\_instance\_parameters](#input\_db\_instance\_parameters) | Optional key-value map of parameters to override for the instance parameter group | `map(any)` | `{}` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Deletion protection | `bool` | `true` | no |
 | <a name="input_dns_ttl"></a> [dns\_ttl](#input\_dns\_ttl) | TTL for DNS record | `number` | `300` | no |
 | <a name="input_egress_cidr_blocks"></a> [egress\_cidr\_blocks](#input\_egress\_cidr\_blocks) | List of CIDR blocks to assign to the egress rule of the security group. If null, `egress_security_group_ids` must be used. | `list(string)` | <pre>[<br/>  "10.0.0.0/8"<br/>]</pre> | no |
