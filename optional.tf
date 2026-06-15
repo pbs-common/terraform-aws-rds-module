@@ -301,6 +301,12 @@ variable "reader_identifier_prefix" {
   type        = string
 }
 
+variable "reader_identifier" {
+  description = "Exact identifier for the reader instance. Overrides reader_identifier_prefix. Use to pin an existing AWS resource name."
+  default     = null
+  type        = string
+}
+
 variable "auto_minor_version_upgrade" {
   description = "Whether to enable auto minor version upgrade for DB instances."
   default     = true
