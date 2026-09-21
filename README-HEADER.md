@@ -43,6 +43,32 @@ module "rds" {
 }
 ```
 
+### Instances
+
+By default the module creates one writer and one reader. `reader_count` controls the readers; `create_writer = false` drops the writer, for a cluster whose instances are managed elsewhere or a Serverless v2 cluster that has none of its own.
+
+Serverless v2 scaling normally follows `instance_class == "db.serverless"`, which is correct whenever the module creates the instances. When it does not — `create_writer = false` with `reader_count = 0` — say so directly with `serverless_scaling_enabled`. See [the no-instances example](/examples/no-instances).
+
+Performance Insights is off unless asked for: set `performance_insights_enabled`, optionally with `performance_insights_kms_key_id` and `performance_insights_retention_period` (7, 731, or a multiple of 31). Leaving `performance_insights_enabled` null leaves the setting unmanaged, so existing instances keep what they have.
+
+### Encryption
+
+`storage_encrypted` is on by default using the AWS managed `aws/rds` key. Pass `kms_key_id` to use a customer managed key.
+
+> :warning: `kms_key_id` forces replacement. A cluster already encrypted with a customer managed key must be given that key's ARN for Terraform to manage the setting — omitting it leaves the key in place but unmanaged, and any cluster created fresh without it silently falls back to `aws/rds`.
+
+### Logging
+
+`enabled_cloudwatch_logs_exports` selects the log types sent to CloudWatch Logs — `audit`, `error`, `general`, `slowquery` for `aurora-mysql`, `postgresql` for `aurora-postgresql`.
+
+> :warning: This attribute is not computed, so leaving it null **removes** exports from a cluster that already has them. A cluster already exporting logs must list them here, or its log exports will be switched off.
+
+### Availability zones
+
+`availability_zones` is null by default, which leaves the zones unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has.
+
+> :warning: The attribute forces replacement. Only set it when creating a cluster whose zones you need to pin, and never to a set that differs from a live cluster's.
+
 ## Adding This Version of the Module
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:

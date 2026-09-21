@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.4.0
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.4.0"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -43,11 +43,37 @@ module "rds" {
 }
 ```
 
+### Instances
+
+By default the module creates one writer and one reader. `reader_count` controls the readers; `create_writer = false` drops the writer, for a cluster whose instances are managed elsewhere or a Serverless v2 cluster that has none of its own.
+
+Serverless v2 scaling normally follows `instance_class == "db.serverless"`, which is correct whenever the module creates the instances. When it does not — `create_writer = false` with `reader_count = 0` — say so directly with `serverless_scaling_enabled`. See [the no-instances example](/examples/no-instances).
+
+Performance Insights is off unless asked for: set `performance_insights_enabled`, optionally with `performance_insights_kms_key_id` and `performance_insights_retention_period` (7, 731, or a multiple of 31). Leaving `performance_insights_enabled` null leaves the setting unmanaged, so existing instances keep what they have.
+
+### Encryption
+
+`storage_encrypted` is on by default using the AWS managed `aws/rds` key. Pass `kms_key_id` to use a customer managed key.
+
+> :warning: `kms_key_id` forces replacement. A cluster already encrypted with a customer managed key must be given that key's ARN for Terraform to manage the setting — omitting it leaves the key in place but unmanaged, and any cluster created fresh without it silently falls back to `aws/rds`.
+
+### Logging
+
+`enabled_cloudwatch_logs_exports` selects the log types sent to CloudWatch Logs — `audit`, `error`, `general`, `slowquery` for `aurora-mysql`, `postgresql` for `aurora-postgresql`.
+
+> :warning: This attribute is not computed, so leaving it null **removes** exports from a cluster that already has them. A cluster already exporting logs must list them here, or its log exports will be switched off.
+
+### Availability zones
+
+`availability_zones` is null by default, which leaves the zones unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has.
+
+> :warning: The attribute forces replacement. Only set it when creating a cluster whose zones you need to pin, and never to a set that differs from a live cluster's.
+
 ## Adding This Version of the Module
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.4.0`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -71,7 +97,7 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.49.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.62.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.9.0 |
 
 ## Modules
@@ -107,7 +133,6 @@ No modules.
 | [aws_security_group_rule.proxy_egress](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.proxy_to_db](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) | resource |
 | [random_password.password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
 | [aws_default_tags.common_tags](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/default_tags) | data source |
 | [aws_iam_policy_document.proxy_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_kms_key.proxy_kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
@@ -135,10 +160,11 @@ No modules.
 | <a name="input_autoscaling_scale_in_cooldown"></a> [autoscaling\_scale\_in\_cooldown](#input\_autoscaling\_scale\_in\_cooldown) | Cooldown period in seconds before allowing a scale-in activity. | `number` | `600` | no |
 | <a name="input_autoscaling_scale_out_cooldown"></a> [autoscaling\_scale\_out\_cooldown](#input\_autoscaling\_scale\_out\_cooldown) | Cooldown period in seconds before allowing a scale-out activity. | `number` | `60` | no |
 | <a name="input_autoscaling_target_value"></a> [autoscaling\_target\_value](#input\_autoscaling\_target\_value) | Target value for the autoscaling metric. For "cpu", this is a percentage (e.g. 50). For "connections", this is a percentage of max connections (e.g. 70). | `number` | `50` | no |
-| <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | Availability zones to be used by this RDS cluster | `list(string)` | `null` | no |
+| <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | Availability zones to be used by this RDS cluster. When null the zones are left unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has. Setting this on a cluster that already exists in different zones replaces it, so leave it null unless you are creating a cluster and need to pin its zones. | `list(string)` | `null` | no |
 | <a name="input_backup_retention_period"></a> [backup\_retention\_period](#input\_backup\_retention\_period) | Backup retention period | `number` | `7` | no |
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
+| <a name="input_create_writer"></a> [create\_writer](#input\_create\_writer) | (optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic. | `bool` | `true` | no |
 | <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB | `string` | `null` | no |
 | <a name="input_db_admin_username"></a> [db\_admin\_username](#input\_db\_admin\_username) | Admin username for the DB | `string` | `"root"` | no |
 | <a name="input_db_cluster_parameter_group_description"></a> [db\_cluster\_parameter\_group\_description](#input\_db\_cluster\_parameter\_group\_description) | Description for the RDS cluster parameter group. Defaults to a generated value. | `string` | `null` | no |
@@ -152,6 +178,7 @@ No modules.
 | <a name="input_dns_ttl"></a> [dns\_ttl](#input\_dns\_ttl) | TTL for DNS record | `number` | `300` | no |
 | <a name="input_egress_cidr_blocks"></a> [egress\_cidr\_blocks](#input\_egress\_cidr\_blocks) | List of CIDR blocks to assign to the egress rule of the security group. If null, `egress_security_group_ids` must be used. | `list(string)` | <pre>[<br/>  "10.0.0.0/8"<br/>]</pre> | no |
 | <a name="input_egress_source_sg_id"></a> [egress\_source\_sg\_id](#input\_egress\_source\_sg\_id) | List of security group ID to assign to the egress rule of the security group. If null, `egress_cidr_blocks` must be used. | `string` | `null` | no |
+| <a name="input_enabled_cloudwatch_logs_exports"></a> [enabled\_cloudwatch\_logs\_exports](#input\_enabled\_cloudwatch\_logs\_exports) | (optional) Log types to export to CloudWatch Logs. For `aurora-mysql`: audit, error, general, slowquery. For `aurora-postgresql`: postgresql. When null no exports are configured — note that this removes any exports an existing cluster has, so a cluster already exporting logs must list them here. | `list(string)` | `null` | no |
 | <a name="input_engine"></a> [engine](#input\_engine) | Engine to use for the DB | `string` | `"aurora-postgresql"` | no |
 | <a name="input_engine_mode"></a> [engine\_mode](#input\_engine\_mode) | Engine mode of the RDS cluster | `string` | `"provisioned"` | no |
 | <a name="input_engine_preferred_versions"></a> [engine\_preferred\_versions](#input\_engine\_preferred\_versions) | Engine preferred versions of the RDS cluster | `list(string)` | <pre>[<br/>  "17.5"<br/>]</pre> | no |
@@ -160,9 +187,13 @@ No modules.
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | List of ingress rules to create on the DB security group. Each rule supports: description, from\_port, to\_port, protocol, cidr\_blocks (list), source\_security\_group\_id. | <pre>list(object({<br/>    description              = optional(string, "")<br/>    from_port                = number<br/>    to_port                  = number<br/>    protocol                 = optional(string, "tcp")<br/>    cidr_blocks              = optional(list(string), [])<br/>    source_security_group_id = optional(string, null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance class | `string` | `"db.serverless"` | no |
 | <a name="input_instance_copy_tags_to_snapshot"></a> [instance\_copy\_tags\_to\_snapshot](#input\_instance\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots for DB instances. | `bool` | `true` | no |
+| <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | (optional) ARN of the KMS key used to encrypt the cluster's storage. When null the cluster uses the AWS managed `aws/rds` key. Changing this on an existing cluster replaces it, so a cluster already encrypted with a customer managed key must be given that key's ARN here for Terraform to manage the setting rather than leave it unmanaged. | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for the cluster | `number` | `8` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Minimum capacity for the cluster | `number` | `0.5` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the RDS Module. If null, will default to product. | `string` | `null` | no |
+| <a name="input_performance_insights_enabled"></a> [performance\_insights\_enabled](#input\_performance\_insights\_enabled) | (optional) Enable Performance Insights on the cluster's instances. When null the setting is left unmanaged, so instances keep whatever they already have and new ones take the AWS default. | `bool` | `null` | no |
+| <a name="input_performance_insights_kms_key_id"></a> [performance\_insights\_kms\_key\_id](#input\_performance\_insights\_kms\_key\_id) | (optional) ARN of the KMS key used to encrypt Performance Insights data. Only used when `performance_insights_enabled` is true. | `string` | `null` | no |
+| <a name="input_performance_insights_retention_period"></a> [performance\_insights\_retention\_period](#input\_performance\_insights\_retention\_period) | (optional) Days to retain Performance Insights data. Valid values are 7, 731, or any multiple of 31 up to 731. Only used when `performance_insights_enabled` is true. | `number` | `null` | no |
 | <a name="input_port"></a> [port](#input\_port) | Port for the DB | `number` | `null` | no |
 | <a name="input_preferred_backup_window"></a> [preferred\_backup\_window](#input\_preferred\_backup\_window) | Preferred backup window | `string` | `"04:00-04:30"` | no |
 | <a name="input_preferred_maintenance_window"></a> [preferred\_maintenance\_window](#input\_preferred\_maintenance\_window) | Preferred maintenance window | `string` | `"sun:05:00-sun:06:00"` | no |
@@ -180,6 +211,7 @@ No modules.
 | <a name="input_reader_identifier"></a> [reader\_identifier](#input\_reader\_identifier) | Exact identifier for the reader instance. Overrides reader\_identifier\_prefix. Use to pin an existing AWS resource name. | `string` | `null` | no |
 | <a name="input_reader_identifier_prefix"></a> [reader\_identifier\_prefix](#input\_reader\_identifier\_prefix) | Prefix for reader instance identifiers. Reader names become prefix+(index+1). If null, defaults to a generated pattern. | `string` | `null` | no |
 | <a name="input_seconds_until_auto_pause"></a> [seconds\_until\_auto\_pause](#input\_seconds\_until\_auto\_pause) | (Optional) Time, in seconds, before an Aurora DB cluster in provisioned DB engine mode is paused. Valid values are 300 through 86400 | `number` | `300` | no |
+| <a name="input_serverless_scaling_enabled"></a> [serverless\_scaling\_enabled](#input\_serverless\_scaling\_enabled) | (optional) Configure Serverless v2 scaling on the cluster. When null this follows `instance_class == "db.serverless"`, which is the right answer whenever the module creates the cluster's instances. Set it explicitly when it is not — a cluster with `create_writer = false` still needs a scaling configuration if its instances are serverless. | `bool` | `null` | no |
 | <a name="input_sg_description"></a> [sg\_description](#input\_sg\_description) | Description for the DB security group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_sg_name"></a> [sg\_name](#input\_sg\_name) | Explicit name for the DB security group. If set, overrides name\_prefix. | `string` | `null` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Skip final snapshot | `bool` | `false` | no |

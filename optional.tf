@@ -81,7 +81,7 @@ variable "engine_preferred_versions" {
 }
 
 variable "availability_zones" {
-  description = "Availability zones to be used by this RDS cluster"
+  description = "Availability zones to be used by this RDS cluster. When null the zones are left unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has. Setting this on a cluster that already exists in different zones replaces it, so leave it null unless you are creating a cluster and need to pin its zones."
   default     = null
   type        = list(string)
   validation {
@@ -419,4 +419,54 @@ variable "autoscaling_scale_out_cooldown" {
   description = "Cooldown period in seconds before allowing a scale-out activity."
   default     = 60
   type        = number
+}
+
+variable "kms_key_id" {
+  description = "(optional) ARN of the KMS key used to encrypt the cluster's storage. When null the cluster uses the AWS managed `aws/rds` key. Changing this on an existing cluster replaces it, so a cluster already encrypted with a customer managed key must be given that key's ARN here for Terraform to manage the setting rather than leave it unmanaged."
+  default     = null
+  type        = string
+}
+
+variable "enabled_cloudwatch_logs_exports" {
+  description = "(optional) Log types to export to CloudWatch Logs. For `aurora-mysql`: audit, error, general, slowquery. For `aurora-postgresql`: postgresql. When null no exports are configured — note that this removes any exports an existing cluster has, so a cluster already exporting logs must list them here."
+  default     = null
+  type        = list(string)
+  validation {
+    condition     = var.enabled_cloudwatch_logs_exports == null || alltrue([for t in coalesce(var.enabled_cloudwatch_logs_exports, []) : contains(["audit", "error", "general", "slowquery", "postgresql", "iam-db-auth-error", "instance"], t)])
+    error_message = "Each enabled_cloudwatch_logs_exports entry must be one of [audit, error, general, slowquery, postgresql, iam-db-auth-error, instance]."
+  }
+}
+
+variable "create_writer" {
+  description = "(optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic."
+  default     = true
+  type        = bool
+}
+
+variable "serverless_scaling_enabled" {
+  description = "(optional) Configure Serverless v2 scaling on the cluster. When null this follows `instance_class == \"db.serverless\"`, which is the right answer whenever the module creates the cluster's instances. Set it explicitly when it is not — a cluster with `create_writer = false` still needs a scaling configuration if its instances are serverless."
+  default     = null
+  type        = bool
+}
+
+variable "performance_insights_enabled" {
+  description = "(optional) Enable Performance Insights on the cluster's instances. When null the setting is left unmanaged, so instances keep whatever they already have and new ones take the AWS default."
+  default     = null
+  type        = bool
+}
+
+variable "performance_insights_kms_key_id" {
+  description = "(optional) ARN of the KMS key used to encrypt Performance Insights data. Only used when `performance_insights_enabled` is true."
+  default     = null
+  type        = string
+}
+
+variable "performance_insights_retention_period" {
+  description = "(optional) Days to retain Performance Insights data. Valid values are 7, 731, or any multiple of 31 up to 731. Only used when `performance_insights_enabled` is true."
+  default     = null
+  type        = number
+  validation {
+    condition     = var.performance_insights_retention_period == null || contains([7, 731], coalesce(var.performance_insights_retention_period, 7)) || coalesce(var.performance_insights_retention_period, 7) % 31 == 0
+    error_message = "The performance_insights_retention_period must be 7, 731, or a multiple of 31."
+  }
 }

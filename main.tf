@@ -18,13 +18,15 @@ resource "aws_rds_cluster" "db" {
   snapshot_identifier             = var.snapshot_identifier
   db_cluster_parameter_group_name = local.db_cluster_parameter_group_name
   storage_encrypted               = var.storage_encrypted
+  kms_key_id                      = var.kms_key_id
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
+  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
   deletion_protection = var.deletion_protection
   skip_final_snapshot = var.skip_final_snapshot
 
   dynamic "serverlessv2_scaling_configuration" {
-    for_each = var.instance_class == "db.serverless" ? [1] : []
+    for_each = local.serverless_scaling_enabled ? [1] : []
     content {
       min_capacity             = var.min_capacity
       max_capacity             = var.max_capacity
