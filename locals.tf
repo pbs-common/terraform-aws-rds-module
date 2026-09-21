@@ -8,7 +8,20 @@ locals {
   vpc_id              = var.vpc_id != null ? var.vpc_id : data.aws_vpc.vpc[0].id
   private_subnets     = var.private_subnets != null ? var.private_subnets : data.aws_subnets.private_subnets[0].ids
   private_hosted_zone = var.create_dns ? data.aws_route53_zone.private_hosted_zone[0].zone_id : null
-  availability_zones  = var.availability_zones != null ? var.availability_zones : slice(data.aws_availability_zones.available[0].names, 0, 3) # We take the slice here because we can only specify 3 AZs
+  # Passed through as-is. Leaving this null keeps the zones unmanaged, which is what an existing
+  # cluster needs: the attribute forces replacement, so computing a zone set here would replace any
+  # cluster that happens to sit elsewhere.
+  availability_zones = var.availability_zones
+
+  # Serverless v2 scaling belongs to the cluster, but whether it is wanted normally follows the
+  # class of the instances the module creates. Callers whose instances are managed elsewhere have
+  # to say so directly.
+  serverless_scaling_enabled = var.serverless_scaling_enabled != null ? var.serverless_scaling_enabled : var.instance_class == "db.serverless"
+
+  # RDS rejects a retention period or KMS key when Performance Insights is off, so these only
+  # travel with an explicit enable.
+  performance_insights_kms_key_id       = var.performance_insights_enabled == true ? var.performance_insights_kms_key_id : null
+  performance_insights_retention_period = var.performance_insights_enabled == true ? var.performance_insights_retention_period : null
 
   db_admin_password = var.db_admin_password != null ? var.db_admin_password : random_password.password.result
 

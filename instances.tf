@@ -1,4 +1,5 @@
 resource "aws_rds_cluster_instance" "writer" {
+  count                      = var.create_writer ? 1 : 0
   cluster_identifier         = aws_rds_cluster.db.id
   identifier                 = var.writer_identifier != null ? var.writer_identifier : "${local.name}-instance-1"
   instance_class             = var.instance_class
@@ -8,6 +9,10 @@ resource "aws_rds_cluster_instance" "writer" {
   engine_version             = local.engine_version
   auto_minor_version_upgrade = var.auto_minor_version_upgrade
   copy_tags_to_snapshot      = var.instance_copy_tags_to_snapshot
+
+  performance_insights_enabled          = var.performance_insights_enabled
+  performance_insights_kms_key_id       = local.performance_insights_kms_key_id
+  performance_insights_retention_period = local.performance_insights_retention_period
 
   tags = local.tags
 }
@@ -23,6 +28,10 @@ resource "aws_rds_cluster_instance" "reader" {
   engine_version             = local.engine_version
   auto_minor_version_upgrade = var.auto_minor_version_upgrade
   copy_tags_to_snapshot      = var.instance_copy_tags_to_snapshot
+
+  performance_insights_enabled          = var.performance_insights_enabled
+  performance_insights_kms_key_id       = local.performance_insights_kms_key_id
+  performance_insights_retention_period = local.performance_insights_retention_period
 
   tags = local.tags
 }

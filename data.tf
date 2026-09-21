@@ -1,8 +1,3 @@
-data "aws_availability_zones" "available" {
-  count = var.availability_zones == null ? 1 : 0
-  state = "available"
-}
-
 data "aws_vpc" "vpc" {
   count = var.vpc_id == null ? 1 : 0
   tags = {
