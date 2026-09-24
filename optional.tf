@@ -30,7 +30,7 @@ variable "db_admin_username" {
 }
 
 variable "db_admin_password" {
-  description = "Admin password for the DB"
+  description = "Admin password for the DB. Only used when the cluster is created: later changes to it are ignored, so it cannot rotate the password of an existing or imported cluster."
   default     = null
   type        = string
   sensitive   = true
@@ -468,5 +468,21 @@ variable "performance_insights_retention_period" {
   validation {
     condition     = var.performance_insights_retention_period == null || contains([7, 731], coalesce(var.performance_insights_retention_period, 7)) || coalesce(var.performance_insights_retention_period, 7) % 31 == 0
     error_message = "The performance_insights_retention_period must be 7, 731, or a multiple of 31."
+  }
+}
+
+variable "db_instance_parameter_group_name" {
+  description = "(optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached."
+  default     = null
+  type        = string
+}
+
+variable "extra_security_group_ids" {
+  description = "(optional) Additional security group IDs to attach to the cluster alongside the one the module creates. A cluster that already has other groups attached must list them here, or they are detached."
+  default     = []
+  type        = list(string)
+  validation {
+    condition     = alltrue([for id in var.extra_security_group_ids : can(regex("^sg-[0-9a-f]+$", id))])
+    error_message = "Each extra_security_group_ids entry must be a security group ID (sg-...)."
   }
 }

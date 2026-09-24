@@ -10,8 +10,8 @@ output "db_admin_username" {
 }
 
 output "db_admin_password" {
-  description = "Admin password for DB"
-  value       = random_password.password.result
+  description = "Admin password the module set when it created the DB. Changes to the master password are ignored after creation, so for an imported cluster this is not the live password."
+  value       = local.db_admin_password
   sensitive   = true
 }
 
@@ -41,13 +41,13 @@ output "admin_sg_id" {
 }
 
 output "cluster_parameter_group_name" {
-  value       = aws_rds_cluster_parameter_group.this.name
-  description = "The name of the cluster parameter group"
+  value       = local.db_cluster_parameter_group_name
+  description = "The name of the cluster parameter group attached to the cluster"
 }
 
 output "instance_parameter_group_name" {
-  value       = aws_db_parameter_group.this.name
-  description = "The name of the instance parameter group"
+  value       = local.db_instance_parameter_group_name
+  description = "The name of the instance parameter group attached to the instances"
 }
 
 output "parameter_group_family" {

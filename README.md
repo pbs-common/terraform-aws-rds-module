@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.4.1
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.4.1"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -63,6 +63,19 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 > :warning: This attribute is not computed, so leaving it null **removes** exports from a cluster that already has them. A cluster already exporting logs must list them here, or its log exports will be switched off.
 
+### Master password
+
+The master password is set once, when the cluster is created — from `db_admin_password`, or a generated password when that is null — and exposed as the `db_admin_password` output. Changes to it are ignored afterwards, so neither changing `db_admin_password` nor importing an existing cluster rotates the live password.
+
+> :warning: For an imported cluster, and for any cluster whose password was rotated outside Terraform, the `db_admin_password` output is not the live password. Rotate the master password with the AWS console or CLI.
+
+### Adopting an existing cluster
+
+An existing cluster often has settings the module would otherwise replace:
+
+- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached. `db_cluster_parameter_group_name` does the same for the cluster parameter group.
+- `extra_security_group_ids` attaches more security groups alongside the module's. A cluster that already has other groups must list them here, or they are detached.
+
 ### Availability zones
 
 `availability_zones` is null by default, which leaves the zones unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has.
@@ -73,7 +86,7 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.4.1`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -165,13 +178,14 @@ No modules.
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
 | <a name="input_create_writer"></a> [create\_writer](#input\_create\_writer) | (optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic. | `bool` | `true` | no |
-| <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB | `string` | `null` | no |
+| <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB. Only used when the cluster is created: later changes to it are ignored, so it cannot rotate the password of an existing or imported cluster. | `string` | `null` | no |
 | <a name="input_db_admin_username"></a> [db\_admin\_username](#input\_db\_admin\_username) | Admin username for the DB | `string` | `"root"` | no |
 | <a name="input_db_cluster_parameter_group_description"></a> [db\_cluster\_parameter\_group\_description](#input\_db\_cluster\_parameter\_group\_description) | Description for the RDS cluster parameter group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_cluster_parameter_group_name"></a> [db\_cluster\_parameter\_group\_name](#input\_db\_cluster\_parameter\_group\_name) | DB cluster parameter group name | `string` | `null` | no |
 | <a name="input_db_cluster_parameter_group_resource_name"></a> [db\_cluster\_parameter\_group\_resource\_name](#input\_db\_cluster\_parameter\_group\_resource\_name) | Name of the aws\_rds\_cluster\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_cluster_parameters"></a> [db\_cluster\_parameters](#input\_db\_cluster\_parameters) | Optional key-value map of parameters to override for the cluster parameter group | `map(any)` | `{}` | no |
 | <a name="input_db_instance_parameter_group_description"></a> [db\_instance\_parameter\_group\_description](#input\_db\_instance\_parameter\_group\_description) | Description for the RDS instance parameter group. Defaults to a generated value. | `string` | `null` | no |
+| <a name="input_db_instance_parameter_group_name"></a> [db\_instance\_parameter\_group\_name](#input\_db\_instance\_parameter\_group\_name) | (optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached. | `string` | `null` | no |
 | <a name="input_db_instance_parameter_group_resource_name"></a> [db\_instance\_parameter\_group\_resource\_name](#input\_db\_instance\_parameter\_group\_resource\_name) | Name of the aws\_db\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_instance_parameters"></a> [db\_instance\_parameters](#input\_db\_instance\_parameters) | Optional key-value map of parameters to override for the instance parameter group | `map(any)` | `{}` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Deletion protection | `bool` | `true` | no |
@@ -183,6 +197,7 @@ No modules.
 | <a name="input_engine_mode"></a> [engine\_mode](#input\_engine\_mode) | Engine mode of the RDS cluster | `string` | `"provisioned"` | no |
 | <a name="input_engine_preferred_versions"></a> [engine\_preferred\_versions](#input\_engine\_preferred\_versions) | Engine preferred versions of the RDS cluster | `list(string)` | <pre>[<br/>  "17.5"<br/>]</pre> | no |
 | <a name="input_engine_version"></a> [engine\_version](#input\_engine\_version) | Engine version of the RDS cluster | `string` | `"17.5"` | no |
+| <a name="input_extra_security_group_ids"></a> [extra\_security\_group\_ids](#input\_extra\_security\_group\_ids) | (optional) Additional security group IDs to attach to the cluster alongside the one the module creates. A cluster that already has other groups attached must list them here, or they are detached. | `list(string)` | `[]` | no |
 | <a name="input_final_snapshot_identifier"></a> [final\_snapshot\_identifier](#input\_final\_snapshot\_identifier) | Final snapshot identifier | `string` | `null` | no |
 | <a name="input_ingress_rules"></a> [ingress\_rules](#input\_ingress\_rules) | List of ingress rules to create on the DB security group. Each rule supports: description, from\_port, to\_port, protocol, cidr\_blocks (list), source\_security\_group\_id. | <pre>list(object({<br/>    description              = optional(string, "")<br/>    from_port                = number<br/>    to_port                  = number<br/>    protocol                 = optional(string, "tcp")<br/>    cidr_blocks              = optional(list(string), [])<br/>    source_security_group_id = optional(string, null)<br/>  }))</pre> | `[]` | no |
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance class | `string` | `"db.serverless"` | no |
@@ -229,13 +244,13 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_admin_sg_id"></a> [admin\_sg\_id](#output\_admin\_sg\_id) | The security group id for performing administrative tasks on the database. If use\_proxy is false, this is the same as sg\_id |
-| <a name="output_cluster_parameter_group_name"></a> [cluster\_parameter\_group\_name](#output\_cluster\_parameter\_group\_name) | The name of the cluster parameter group |
+| <a name="output_cluster_parameter_group_name"></a> [cluster\_parameter\_group\_name](#output\_cluster\_parameter\_group\_name) | The name of the cluster parameter group attached to the cluster |
 | <a name="output_db_admin_dns"></a> [db\_admin\_dns](#output\_db\_admin\_dns) | DNS endpoint for performing administrative tasks on the database, i.e. the non-proxy writer endpoint for the cluster |
-| <a name="output_db_admin_password"></a> [db\_admin\_password](#output\_db\_admin\_password) | Admin password for DB |
+| <a name="output_db_admin_password"></a> [db\_admin\_password](#output\_db\_admin\_password) | Admin password the module set when it created the DB. Changes to the master password are ignored after creation, so for an imported cluster this is not the live password. |
 | <a name="output_db_admin_username"></a> [db\_admin\_username](#output\_db\_admin\_username) | Admin username for DB |
 | <a name="output_db_cluster_dns"></a> [db\_cluster\_dns](#output\_db\_cluster\_dns) | Private DNS record for the DB Cluster endpoint (if create\_dns is true, otherwise the endpoint itself) |
 | <a name="output_db_cluster_reader_dns"></a> [db\_cluster\_reader\_dns](#output\_db\_cluster\_reader\_dns) | Private DNS record for the DB Cluster reader endpoint (if create\_dns is true, otherwise the endpoint itself) |
-| <a name="output_instance_parameter_group_name"></a> [instance\_parameter\_group\_name](#output\_instance\_parameter\_group\_name) | The name of the instance parameter group |
+| <a name="output_instance_parameter_group_name"></a> [instance\_parameter\_group\_name](#output\_instance\_parameter\_group\_name) | The name of the instance parameter group attached to the instances |
 | <a name="output_name"></a> [name](#output\_name) | Name of the DB |
 | <a name="output_parameter_group_family"></a> [parameter\_group\_family](#output\_parameter\_group\_family) | The family type of the parameter groups |
 | <a name="output_sg_id"></a> [sg\_id](#output\_sg\_id) | Security group ID for DB. If use\_proxy is true, this is the proxy SG, otherwise it's the cluster's security group |

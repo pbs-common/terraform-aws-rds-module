@@ -63,6 +63,19 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 > :warning: This attribute is not computed, so leaving it null **removes** exports from a cluster that already has them. A cluster already exporting logs must list them here, or its log exports will be switched off.
 
+### Master password
+
+The master password is set once, when the cluster is created — from `db_admin_password`, or a generated password when that is null — and exposed as the `db_admin_password` output. Changes to it are ignored afterwards, so neither changing `db_admin_password` nor importing an existing cluster rotates the live password.
+
+> :warning: For an imported cluster, and for any cluster whose password was rotated outside Terraform, the `db_admin_password` output is not the live password. Rotate the master password with the AWS console or CLI.
+
+### Adopting an existing cluster
+
+An existing cluster often has settings the module would otherwise replace:
+
+- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached. `db_cluster_parameter_group_name` does the same for the cluster parameter group.
+- `extra_security_group_ids` attaches more security groups alongside the module's. A cluster that already has other groups must list them here, or they are detached.
+
 ### Availability zones
 
 `availability_zones` is null by default, which leaves the zones unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has.

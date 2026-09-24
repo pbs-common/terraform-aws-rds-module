@@ -53,7 +53,8 @@ locals {
   db_cluster_dns        = var.create_dns ? aws_route53_record.primary[0].fqdn : local.dns_target
   db_cluster_reader_dns = var.create_dns ? aws_route53_record.reader[0].fqdn : local.reader_dns_target
 
-  db_cluster_parameter_group_name = var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name : aws_rds_cluster_parameter_group.this.name
+  db_cluster_parameter_group_name  = var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name : aws_rds_cluster_parameter_group.this.name
+  db_instance_parameter_group_name = var.db_instance_parameter_group_name != null ? var.db_instance_parameter_group_name : aws_db_parameter_group.this.name
 
   creator = "terraform"
 
