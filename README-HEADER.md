@@ -63,6 +63,24 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 > :warning: This attribute is not computed, so leaving it null **removes** exports from a cluster that already has them. A cluster already exporting logs must list them here, or its log exports will be switched off.
 
+### Master password
+
+By default the module sets the master password to `db_admin_password`, or to a generated password when that is null, and exposes it as the `db_admin_password` output. Two inputs change that:
+
+- `manage_master_user_password = true` lets RDS generate the password and keep it in Secrets Manager (optionally encrypted with `master_user_secret_kms_key_id`). The secret's ARN is in the `master_user_secret_arn` output, and `db_admin_password` must be left null.
+- `set_master_password = false` leaves the password unmanaged, so an existing cluster keeps its live password.
+
+In either case the `db_admin_password` output is null, and `use_proxy` needs `proxy_password`.
+
+> :warning: When adopting an existing cluster, set `set_master_password = false` or pass its current password as `db_admin_password` — otherwise the first apply rotates the live master password to a generated one. Turning `manage_master_user_password` on for an existing cluster also replaces its password.
+
+### Adopting an existing cluster
+
+An existing cluster often has settings the module would otherwise replace:
+
+- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached. `db_cluster_parameter_group_name` does the same for the cluster parameter group.
+- `extra_security_group_ids` attaches more security groups alongside the module's. A cluster that already has other groups must list them here, or they are detached.
+
 ### Availability zones
 
 `availability_zones` is null by default, which leaves the zones unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has.

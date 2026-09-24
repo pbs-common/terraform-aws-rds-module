@@ -10,9 +10,14 @@ output "db_admin_username" {
 }
 
 output "db_admin_password" {
-  description = "Admin password for DB"
-  value       = random_password.password.result
+  description = "Admin password for DB. Null when the module does not set the master password (`set_master_password = false` or `manage_master_user_password = true`)."
+  value       = local.db_admin_password
   sensitive   = true
+}
+
+output "master_user_secret_arn" {
+  description = "ARN of the Secrets Manager secret RDS manages for the master password. Null unless `manage_master_user_password` is true."
+  value       = try(aws_rds_cluster.db.master_user_secret[0].secret_arn, null)
 }
 
 output "db_cluster_dns" {
@@ -41,13 +46,13 @@ output "admin_sg_id" {
 }
 
 output "cluster_parameter_group_name" {
-  value       = aws_rds_cluster_parameter_group.this.name
-  description = "The name of the cluster parameter group"
+  value       = local.db_cluster_parameter_group_name
+  description = "The name of the cluster parameter group attached to the cluster"
 }
 
 output "instance_parameter_group_name" {
-  value       = aws_db_parameter_group.this.name
-  description = "The name of the instance parameter group"
+  value       = local.db_instance_parameter_group_name
+  description = "The name of the instance parameter group attached to the instances"
 }
 
 output "parameter_group_family" {

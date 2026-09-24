@@ -23,7 +23,10 @@ locals {
   performance_insights_kms_key_id       = var.performance_insights_enabled == true ? var.performance_insights_kms_key_id : null
   performance_insights_retention_period = var.performance_insights_enabled == true ? var.performance_insights_retention_period : null
 
-  db_admin_password = var.db_admin_password != null ? var.db_admin_password : random_password.password.result
+  # The module only knows the master password when it sets it. Leaving it null when it does not
+  # keeps master_password out of the plan, so an adopted cluster's live password is not rotated.
+  sets_master_password = var.set_master_password && !var.manage_master_user_password
+  db_admin_password    = !local.sets_master_password ? null : var.db_admin_password != null ? var.db_admin_password : random_password.password.result
 
   proxy_username = var.proxy_username != null ? var.proxy_username : var.db_admin_username
   proxy_password = var.proxy_password != null ? var.proxy_password : local.db_admin_password
@@ -53,7 +56,8 @@ locals {
   db_cluster_dns        = var.create_dns ? aws_route53_record.primary[0].fqdn : local.dns_target
   db_cluster_reader_dns = var.create_dns ? aws_route53_record.reader[0].fqdn : local.reader_dns_target
 
-  db_cluster_parameter_group_name = var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name : aws_rds_cluster_parameter_group.this.name
+  db_cluster_parameter_group_name  = var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name : aws_rds_cluster_parameter_group.this.name
+  db_instance_parameter_group_name = var.db_instance_parameter_group_name != null ? var.db_instance_parameter_group_name : aws_db_parameter_group.this.name
 
   creator = "terraform"
 
