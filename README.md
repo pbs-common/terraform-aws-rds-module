@@ -65,14 +65,9 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 ### Master password
 
-By default the module sets the master password to `db_admin_password`, or to a generated password when that is null, and exposes it as the `db_admin_password` output. Two inputs change that:
+The master password is set once, when the cluster is created — from `db_admin_password`, or a generated password when that is null — and exposed as the `db_admin_password` output. Changes to it are ignored afterwards, so neither changing `db_admin_password` nor importing an existing cluster rotates the live password.
 
-- `manage_master_user_password = true` lets RDS generate the password and keep it in Secrets Manager (optionally encrypted with `master_user_secret_kms_key_id`). The secret's ARN is in the `master_user_secret_arn` output, and `db_admin_password` must be left null.
-- `set_master_password = false` leaves the password unmanaged, so an existing cluster keeps its live password.
-
-In either case the `db_admin_password` output is null, and `use_proxy` needs `proxy_password`.
-
-> :warning: When adopting an existing cluster, set `set_master_password = false` or pass its current password as `db_admin_password` — otherwise the first apply rotates the live master password to a generated one. Turning `manage_master_user_password` on for an existing cluster also replaces its password.
+> :warning: For an imported cluster, and for any cluster whose password was rotated outside Terraform, the `db_admin_password` output is not the live password. Rotate the master password with the AWS console or CLI.
 
 ### Adopting an existing cluster
 
@@ -183,7 +178,7 @@ No modules.
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
 | <a name="input_create_writer"></a> [create\_writer](#input\_create\_writer) | (optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic. | `bool` | `true` | no |
-| <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB | `string` | `null` | no |
+| <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB. Only used when the cluster is created: later changes to it are ignored, so it cannot rotate the password of an existing or imported cluster. | `string` | `null` | no |
 | <a name="input_db_admin_username"></a> [db\_admin\_username](#input\_db\_admin\_username) | Admin username for the DB | `string` | `"root"` | no |
 | <a name="input_db_cluster_parameter_group_description"></a> [db\_cluster\_parameter\_group\_description](#input\_db\_cluster\_parameter\_group\_description) | Description for the RDS cluster parameter group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_cluster_parameter_group_name"></a> [db\_cluster\_parameter\_group\_name](#input\_db\_cluster\_parameter\_group\_name) | DB cluster parameter group name | `string` | `null` | no |
@@ -208,8 +203,6 @@ No modules.
 | <a name="input_instance_class"></a> [instance\_class](#input\_instance\_class) | Instance class | `string` | `"db.serverless"` | no |
 | <a name="input_instance_copy_tags_to_snapshot"></a> [instance\_copy\_tags\_to\_snapshot](#input\_instance\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots for DB instances. | `bool` | `true` | no |
 | <a name="input_kms_key_id"></a> [kms\_key\_id](#input\_kms\_key\_id) | (optional) ARN of the KMS key used to encrypt the cluster's storage. When null the cluster uses the AWS managed `aws/rds` key. Changing this on an existing cluster replaces it, so a cluster already encrypted with a customer managed key must be given that key's ARN here for Terraform to manage the setting rather than leave it unmanaged. | `string` | `null` | no |
-| <a name="input_manage_master_user_password"></a> [manage\_master\_user\_password](#input\_manage\_master\_user\_password) | (optional) Let RDS generate the master password and keep it in Secrets Manager. The module then sets no password of its own, and `db_admin_password` must be null. Turning this on for an existing cluster replaces its password with the managed one. | `bool` | `false` | no |
-| <a name="input_master_user_secret_kms_key_id"></a> [master\_user\_secret\_kms\_key\_id](#input\_master\_user\_secret\_kms\_key\_id) | (optional) KMS key ID, ARN, or alias used to encrypt the RDS-managed master password secret. When null the `aws/secretsmanager` key is used. Only used when `manage_master_user_password` is true. | `string` | `null` | no |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Maximum capacity for the cluster | `number` | `8` | no |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Minimum capacity for the cluster | `number` | `0.5` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the RDS Module. If null, will default to product. | `string` | `null` | no |
@@ -226,7 +219,7 @@ No modules.
 | <a name="input_proxy_idle_client_timeout"></a> [proxy\_idle\_client\_timeout](#input\_proxy\_idle\_client\_timeout) | Idle client timeout for RDS proxy | `number` | `1800` | no |
 | <a name="input_proxy_kms_key_id"></a> [proxy\_kms\_key\_id](#input\_proxy\_kms\_key\_id) | KMS key ID for RDS proxy. By default, uses the alias for the account's default KMS key for Secrets Manager. | `string` | `"alias/aws/secretsmanager"` | no |
 | <a name="input_proxy_name"></a> [proxy\_name](#input\_proxy\_name) | Name of the RDS proxy. If null, will default to `local.name`. | `string` | `null` | no |
-| <a name="input_proxy_password"></a> [proxy\_password](#input\_proxy\_password) | Password for RDS proxy. Defaults to the master password, so it is required when the module does not set one (`set_master_password = false` or `manage_master_user_password = true`). | `string` | `null` | no |
+| <a name="input_proxy_password"></a> [proxy\_password](#input\_proxy\_password) | Password for RDS proxy | `string` | `null` | no |
 | <a name="input_proxy_require_tls"></a> [proxy\_require\_tls](#input\_proxy\_require\_tls) | Require TLS for RDS proxy | `bool` | `false` | no |
 | <a name="input_proxy_username"></a> [proxy\_username](#input\_proxy\_username) | Username for RDS proxy | `string` | `null` | no |
 | <a name="input_reader_count"></a> [reader\_count](#input\_reader\_count) | Number of reader instances to provision | `number` | `1` | no |
@@ -234,7 +227,6 @@ No modules.
 | <a name="input_reader_identifier_prefix"></a> [reader\_identifier\_prefix](#input\_reader\_identifier\_prefix) | Prefix for reader instance identifiers. Reader names become prefix+(index+1). If null, defaults to a generated pattern. | `string` | `null` | no |
 | <a name="input_seconds_until_auto_pause"></a> [seconds\_until\_auto\_pause](#input\_seconds\_until\_auto\_pause) | (Optional) Time, in seconds, before an Aurora DB cluster in provisioned DB engine mode is paused. Valid values are 300 through 86400 | `number` | `300` | no |
 | <a name="input_serverless_scaling_enabled"></a> [serverless\_scaling\_enabled](#input\_serverless\_scaling\_enabled) | (optional) Configure Serverless v2 scaling on the cluster. When null this follows `instance_class == "db.serverless"`, which is the right answer whenever the module creates the cluster's instances. Set it explicitly when it is not — a cluster with `create_writer = false` still needs a scaling configuration if its instances are serverless. | `bool` | `null` | no |
-| <a name="input_set_master_password"></a> [set\_master\_password](#input\_set\_master\_password) | (optional) Set the cluster's master password, from `db_admin_password` or else a generated one. Set to false when adopting an existing cluster: the module then leaves `master_password` unmanaged, so the live password is not rotated. A cluster created with this false and `manage_master_user_password` false has no password and RDS rejects it. | `bool` | `true` | no |
 | <a name="input_sg_description"></a> [sg\_description](#input\_sg\_description) | Description for the DB security group. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_sg_name"></a> [sg\_name](#input\_sg\_name) | Explicit name for the DB security group. If set, overrides name\_prefix. | `string` | `null` | no |
 | <a name="input_skip_final_snapshot"></a> [skip\_final\_snapshot](#input\_skip\_final\_snapshot) | Skip final snapshot | `bool` | `false` | no |
@@ -254,12 +246,11 @@ No modules.
 | <a name="output_admin_sg_id"></a> [admin\_sg\_id](#output\_admin\_sg\_id) | The security group id for performing administrative tasks on the database. If use\_proxy is false, this is the same as sg\_id |
 | <a name="output_cluster_parameter_group_name"></a> [cluster\_parameter\_group\_name](#output\_cluster\_parameter\_group\_name) | The name of the cluster parameter group attached to the cluster |
 | <a name="output_db_admin_dns"></a> [db\_admin\_dns](#output\_db\_admin\_dns) | DNS endpoint for performing administrative tasks on the database, i.e. the non-proxy writer endpoint for the cluster |
-| <a name="output_db_admin_password"></a> [db\_admin\_password](#output\_db\_admin\_password) | Admin password for DB. Null when the module does not set the master password (`set_master_password = false` or `manage_master_user_password = true`). |
+| <a name="output_db_admin_password"></a> [db\_admin\_password](#output\_db\_admin\_password) | Admin password the module set when it created the DB. Changes to the master password are ignored after creation, so for an imported cluster this is not the live password. |
 | <a name="output_db_admin_username"></a> [db\_admin\_username](#output\_db\_admin\_username) | Admin username for DB |
 | <a name="output_db_cluster_dns"></a> [db\_cluster\_dns](#output\_db\_cluster\_dns) | Private DNS record for the DB Cluster endpoint (if create\_dns is true, otherwise the endpoint itself) |
 | <a name="output_db_cluster_reader_dns"></a> [db\_cluster\_reader\_dns](#output\_db\_cluster\_reader\_dns) | Private DNS record for the DB Cluster reader endpoint (if create\_dns is true, otherwise the endpoint itself) |
 | <a name="output_instance_parameter_group_name"></a> [instance\_parameter\_group\_name](#output\_instance\_parameter\_group\_name) | The name of the instance parameter group attached to the instances |
-| <a name="output_master_user_secret_arn"></a> [master\_user\_secret\_arn](#output\_master\_user\_secret\_arn) | ARN of the Secrets Manager secret RDS manages for the master password. Null unless `manage_master_user_password` is true. |
 | <a name="output_name"></a> [name](#output\_name) | Name of the DB |
 | <a name="output_parameter_group_family"></a> [parameter\_group\_family](#output\_parameter\_group\_family) | The family type of the parameter groups |
 | <a name="output_sg_id"></a> [sg\_id](#output\_sg\_id) | Security group ID for DB. If use\_proxy is true, this is the proxy SG, otherwise it's the cluster's security group |

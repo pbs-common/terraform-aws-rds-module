@@ -7,8 +7,6 @@ resource "aws_rds_cluster" "db" {
   availability_zones              = local.availability_zones
   master_username                 = var.db_admin_username
   master_password                 = local.db_admin_password
-  manage_master_user_password     = var.manage_master_user_password ? true : null
-  master_user_secret_kms_key_id   = var.manage_master_user_password ? var.master_user_secret_kms_key_id : null
   backup_retention_period         = var.backup_retention_period
   vpc_security_group_ids          = concat([aws_security_group.sg.id], var.extra_security_group_ids)
   db_subnet_group_name            = aws_db_subnet_group.subnet_group.id
@@ -36,10 +34,12 @@ resource "aws_rds_cluster" "db" {
     }
   }
 
-  # Ignoring these because they trigger nonsense updates
+  # Ignoring these because they trigger nonsense updates. master_password is only set at creation:
+  # an imported cluster has no password in state, so managing it would rotate the live one.
   lifecycle {
     ignore_changes = [
       snapshot_identifier,
+      master_password,
     ]
   }
 

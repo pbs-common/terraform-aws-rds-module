@@ -30,7 +30,7 @@ variable "db_admin_username" {
 }
 
 variable "db_admin_password" {
-  description = "Admin password for the DB"
+  description = "Admin password for the DB. Only used when the cluster is created: later changes to it are ignored, so it cannot rotate the password of an existing or imported cluster."
   default     = null
   type        = string
   sensitive   = true
@@ -219,14 +219,10 @@ variable "proxy_username" {
 }
 
 variable "proxy_password" {
-  description = "Password for RDS proxy. Defaults to the master password, so it is required when the module does not set one (`set_master_password = false` or `manage_master_user_password = true`)."
+  description = "Password for RDS proxy"
   default     = null
   type        = string
   sensitive   = true
-  validation {
-    condition     = !var.use_proxy || var.proxy_password != null || (var.set_master_password && !var.manage_master_user_password)
-    error_message = "proxy_password is required with use_proxy when the module does not set the master password."
-  }
 }
 
 variable "proxy_iam_auth" {
@@ -473,28 +469,6 @@ variable "performance_insights_retention_period" {
     condition     = var.performance_insights_retention_period == null || contains([7, 731], coalesce(var.performance_insights_retention_period, 7)) || coalesce(var.performance_insights_retention_period, 7) % 31 == 0
     error_message = "The performance_insights_retention_period must be 7, 731, or a multiple of 31."
   }
-}
-
-variable "set_master_password" {
-  description = "(optional) Set the cluster's master password, from `db_admin_password` or else a generated one. Set to false when adopting an existing cluster: the module then leaves `master_password` unmanaged, so the live password is not rotated. A cluster created with this false and `manage_master_user_password` false has no password and RDS rejects it."
-  default     = true
-  type        = bool
-}
-
-variable "manage_master_user_password" {
-  description = "(optional) Let RDS generate the master password and keep it in Secrets Manager. The module then sets no password of its own, and `db_admin_password` must be null. Turning this on for an existing cluster replaces its password with the managed one."
-  default     = false
-  type        = bool
-  validation {
-    condition     = !var.manage_master_user_password || var.db_admin_password == null
-    error_message = "db_admin_password must be null when manage_master_user_password is true."
-  }
-}
-
-variable "master_user_secret_kms_key_id" {
-  description = "(optional) KMS key ID, ARN, or alias used to encrypt the RDS-managed master password secret. When null the `aws/secretsmanager` key is used. Only used when `manage_master_user_password` is true."
-  default     = null
-  type        = string
 }
 
 variable "db_instance_parameter_group_name" {

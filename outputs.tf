@@ -10,14 +10,9 @@ output "db_admin_username" {
 }
 
 output "db_admin_password" {
-  description = "Admin password for DB. Null when the module does not set the master password (`set_master_password = false` or `manage_master_user_password = true`)."
+  description = "Admin password the module set when it created the DB. Changes to the master password are ignored after creation, so for an imported cluster this is not the live password."
   value       = local.db_admin_password
   sensitive   = true
-}
-
-output "master_user_secret_arn" {
-  description = "ARN of the Secrets Manager secret RDS manages for the master password. Null unless `manage_master_user_password` is true."
-  value       = try(aws_rds_cluster.db.master_user_secret[0].secret_arn, null)
 }
 
 output "db_cluster_dns" {

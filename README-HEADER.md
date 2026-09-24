@@ -65,14 +65,9 @@ Performance Insights is off unless asked for: set `performance_insights_enabled`
 
 ### Master password
 
-By default the module sets the master password to `db_admin_password`, or to a generated password when that is null, and exposes it as the `db_admin_password` output. Two inputs change that:
+The master password is set once, when the cluster is created — from `db_admin_password`, or a generated password when that is null — and exposed as the `db_admin_password` output. Changes to it are ignored afterwards, so neither changing `db_admin_password` nor importing an existing cluster rotates the live password.
 
-- `manage_master_user_password = true` lets RDS generate the password and keep it in Secrets Manager (optionally encrypted with `master_user_secret_kms_key_id`). The secret's ARN is in the `master_user_secret_arn` output, and `db_admin_password` must be left null.
-- `set_master_password = false` leaves the password unmanaged, so an existing cluster keeps its live password.
-
-In either case the `db_admin_password` output is null, and `use_proxy` needs `proxy_password`.
-
-> :warning: When adopting an existing cluster, set `set_master_password = false` or pass its current password as `db_admin_password` — otherwise the first apply rotates the live master password to a generated one. Turning `manage_master_user_password` on for an existing cluster also replaces its password.
+> :warning: For an imported cluster, and for any cluster whose password was rotated outside Terraform, the `db_admin_password` output is not the live password. Rotate the master password with the AWS console or CLI.
 
 ### Adopting an existing cluster
 
