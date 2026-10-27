@@ -23,6 +23,9 @@ locals {
   performance_insights_kms_key_id       = var.performance_insights_enabled == true ? var.performance_insights_kms_key_id : null
   performance_insights_retention_period = var.performance_insights_enabled == true ? var.performance_insights_retention_period : null
 
+  cluster_performance_insights_kms_key_id       = var.cluster_performance_insights_enabled == true ? var.performance_insights_kms_key_id : null
+  cluster_performance_insights_retention_period = var.cluster_performance_insights_enabled == true ? var.performance_insights_retention_period : null
+
   db_admin_password = var.db_admin_password != null ? var.db_admin_password : random_password.password.result
 
   proxy_username = var.proxy_username != null ? var.proxy_username : var.db_admin_username

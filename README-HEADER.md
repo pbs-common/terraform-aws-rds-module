@@ -51,6 +51,10 @@ Serverless v2 scaling normally follows `instance_class == "db.serverless"`, whic
 
 Performance Insights is off unless asked for: set `performance_insights_enabled`, optionally with `performance_insights_kms_key_id` and `performance_insights_retention_period` (7, 731, or a multiple of 31). Leaving `performance_insights_enabled` null leaves the setting unmanaged, so existing instances keep what they have.
 
+`performance_insights_enabled` only reaches the instances the module creates. Readers added by Aurora auto scaling (`autoscaling_enabled` or an external `aws_appautoscaling_target`) are created outside Terraform and never get it. To cover them, set `cluster_performance_insights_enabled = true` (with `database_insights_mode = "standard"` or `"advanced"`) so every instance inherits the cluster setting. The same KMS key and retention inputs apply. Advanced mode needs a retention of at least 465 days.
+
+> :warning: `cluster_performance_insights_enabled` is not computed, so leaving it null turns cluster-level Performance Insights off on a cluster that already has it.
+
 ### Encryption
 
 `storage_encrypted` is on by default using the AWS managed `aws/rds` key. Pass `kms_key_id` to use a customer managed key.

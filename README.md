@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.5.0
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.5.0"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -50,6 +50,10 @@ By default the module creates one writer and one reader. `reader_count` controls
 Serverless v2 scaling normally follows `instance_class == "db.serverless"`, which is correct whenever the module creates the instances. When it does not — `create_writer = false` with `reader_count = 0` — say so directly with `serverless_scaling_enabled`. See [the no-instances example](/examples/no-instances).
 
 Performance Insights is off unless asked for: set `performance_insights_enabled`, optionally with `performance_insights_kms_key_id` and `performance_insights_retention_period` (7, 731, or a multiple of 31). Leaving `performance_insights_enabled` null leaves the setting unmanaged, so existing instances keep what they have.
+
+`performance_insights_enabled` only reaches the instances the module creates. Readers added by Aurora auto scaling (`autoscaling_enabled` or an external `aws_appautoscaling_target`) are created outside Terraform and never get it. To cover them, set `cluster_performance_insights_enabled = true` (with `database_insights_mode = "standard"` or `"advanced"`) so every instance inherits the cluster setting. The same KMS key and retention inputs apply. Advanced mode needs a retention of at least 465 days.
+
+> :warning: `cluster_performance_insights_enabled` is not computed, so leaving it null turns cluster-level Performance Insights off on a cluster that already has it.
 
 ### Encryption
 
@@ -86,7 +90,7 @@ An existing cluster often has settings the module would otherwise replace:
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.5.0`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -110,8 +114,8 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.62.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | 3.9.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.67.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.9.1 |
 
 ## Modules
 
@@ -175,9 +179,11 @@ No modules.
 | <a name="input_autoscaling_target_value"></a> [autoscaling\_target\_value](#input\_autoscaling\_target\_value) | Target value for the autoscaling metric. For "cpu", this is a percentage (e.g. 50). For "connections", this is a percentage of max connections (e.g. 70). | `number` | `50` | no |
 | <a name="input_availability_zones"></a> [availability\_zones](#input\_availability\_zones) | Availability zones to be used by this RDS cluster. When null the zones are left unmanaged: AWS places a new cluster itself, and an existing cluster keeps the zones it already has. Setting this on a cluster that already exists in different zones replaces it, so leave it null unless you are creating a cluster and need to pin its zones. | `list(string)` | `null` | no |
 | <a name="input_backup_retention_period"></a> [backup\_retention\_period](#input\_backup\_retention\_period) | Backup retention period | `number` | `7` | no |
+| <a name="input_cluster_performance_insights_enabled"></a> [cluster\_performance\_insights\_enabled](#input\_cluster\_performance\_insights\_enabled) | (optional) Enable Performance Insights at the cluster level. Every instance inherits it, including readers that Aurora auto scaling adds outside Terraform. Uses `performance_insights_kms_key_id` and `performance_insights_retention_period`. Unlike the instance setting this attribute is not computed, so null turns cluster-level Performance Insights off on a cluster that has it. | `bool` | `null` | no |
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
 | <a name="input_create_writer"></a> [create\_writer](#input\_create\_writer) | (optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic. | `bool` | `true` | no |
+| <a name="input_database_insights_mode"></a> [database\_insights\_mode](#input\_database\_insights\_mode) | (optional) Database Insights mode for the cluster: `standard` or `advanced`. `advanced` requires `cluster_performance_insights_enabled = true` and a `performance_insights_retention_period` of at least 465. When null the mode is left unmanaged. | `string` | `null` | no |
 | <a name="input_db_admin_password"></a> [db\_admin\_password](#input\_db\_admin\_password) | Admin password for the DB. Only used when the cluster is created: later changes to it are ignored, so it cannot rotate the password of an existing or imported cluster. | `string` | `null` | no |
 | <a name="input_db_admin_username"></a> [db\_admin\_username](#input\_db\_admin\_username) | Admin username for the DB | `string` | `"root"` | no |
 | <a name="input_db_cluster_parameter_group_description"></a> [db\_cluster\_parameter\_group\_description](#input\_db\_cluster\_parameter\_group\_description) | Description for the RDS cluster parameter group. Defaults to a generated value. | `string` | `null` | no |

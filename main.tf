@@ -22,6 +22,11 @@ resource "aws_rds_cluster" "db" {
   copy_tags_to_snapshot           = var.copy_tags_to_snapshot
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
+  database_insights_mode                = var.database_insights_mode
+  performance_insights_enabled          = var.cluster_performance_insights_enabled
+  performance_insights_kms_key_id       = local.cluster_performance_insights_kms_key_id
+  performance_insights_retention_period = local.cluster_performance_insights_retention_period
+
   deletion_protection = var.deletion_protection
   skip_final_snapshot = var.skip_final_snapshot
 
@@ -41,6 +46,11 @@ resource "aws_rds_cluster" "db" {
       snapshot_identifier,
       master_password,
     ]
+
+    precondition {
+      condition     = var.database_insights_mode != "advanced" || (var.cluster_performance_insights_enabled == true && coalesce(var.performance_insights_retention_period, 0) >= 465)
+      error_message = "database_insights_mode = \"advanced\" requires cluster_performance_insights_enabled = true and performance_insights_retention_period of at least 465."
+    }
   }
 
   tags = local.tags
