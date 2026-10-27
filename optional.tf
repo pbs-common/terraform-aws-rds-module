@@ -471,6 +471,22 @@ variable "performance_insights_retention_period" {
   }
 }
 
+variable "cluster_performance_insights_enabled" {
+  description = "(optional) Enable Performance Insights at the cluster level. Every instance inherits it, including readers that Aurora auto scaling adds outside Terraform. Uses `performance_insights_kms_key_id` and `performance_insights_retention_period`. Unlike the instance setting this attribute is not computed, so null turns cluster-level Performance Insights off on a cluster that has it."
+  default     = null
+  type        = bool
+}
+
+variable "database_insights_mode" {
+  description = "(optional) Database Insights mode for the cluster: `standard` or `advanced`. `advanced` requires `cluster_performance_insights_enabled = true` and a `performance_insights_retention_period` of at least 465. When null the mode is left unmanaged."
+  default     = null
+  type        = string
+  validation {
+    condition     = var.database_insights_mode == null || contains(["standard", "advanced"], coalesce(var.database_insights_mode, "standard"))
+    error_message = "The database_insights_mode must be one of [standard, advanced]."
+  }
+}
+
 variable "db_instance_parameter_group_name" {
   description = "(optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached."
   default     = null
