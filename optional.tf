@@ -488,9 +488,21 @@ variable "database_insights_mode" {
 }
 
 variable "db_instance_parameter_group_name" {
-  description = "(optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached."
+  description = "(optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached, unless `create_db_instance_parameter_group` is false."
   default     = null
   type        = string
+}
+
+variable "create_db_cluster_parameter_group" {
+  description = "(optional) Create the module's cluster parameter group. Set to false when `db_cluster_parameter_group_name` names a group managed elsewhere, so the module doesn't create one that goes unattached. When false and no name is given, the cluster uses the RDS default group."
+  default     = true
+  type        = bool
+}
+
+variable "create_db_instance_parameter_group" {
+  description = "(optional) Create the module's instance parameter group. Set to false when `db_instance_parameter_group_name` names a group managed elsewhere, or when the module creates no instances. When false and no name is given, the instances use the RDS default group."
+  default     = true
+  type        = bool
 }
 
 variable "extra_security_group_ids" {
