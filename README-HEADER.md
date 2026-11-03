@@ -77,8 +77,10 @@ The master password is set once, when the cluster is created — from `db_admin_
 
 An existing cluster often has settings the module would otherwise replace:
 
-- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached. `db_cluster_parameter_group_name` does the same for the cluster parameter group.
+- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached, unless `create_db_instance_parameter_group` is false. `db_cluster_parameter_group_name` and `create_db_cluster_parameter_group` do the same for the cluster parameter group. With a creation flag off and no name given, the RDS default group, `default.<family>`, is attached.
 - `extra_security_group_ids` attaches more security groups alongside the module's. A cluster that already has other groups must list them here, or they are detached.
+
+> :warning: Turning off `create_db_cluster_parameter_group` or `create_db_instance_parameter_group` on an existing cluster deletes the module's group in the same apply that moves the cluster or instances off it. RDS rejects the deletion while the group is still attached, and with `apply_immediately` false the move can wait for the maintenance window. Set `apply_immediately` to true for that apply, or move to the new group first by setting the name in one apply and turning off creation in the next.
 
 ### Availability zones
 
