@@ -494,13 +494,13 @@ variable "db_instance_parameter_group_name" {
 }
 
 variable "create_db_cluster_parameter_group" {
-  description = "(optional) Create the module's cluster parameter group. Set to false when `db_cluster_parameter_group_name` names a group managed elsewhere, so the module doesn't create one that goes unattached. When false and no name is given, the cluster uses the RDS default group."
+  description = "(optional) Create the module's cluster parameter group. Set to false when `db_cluster_parameter_group_name` names a group managed elsewhere, so the module doesn't create one that goes unattached. When false and no name is given, the cluster is attached to the RDS default group, `default.<family>`. RDS rejects deleting the module's group while it is still attached, so on an existing cluster set `apply_immediately` to true for this change, or move to the new group in an earlier apply. See the README."
   default     = true
   type        = bool
 }
 
 variable "create_db_instance_parameter_group" {
-  description = "(optional) Create the module's instance parameter group. Set to false when `db_instance_parameter_group_name` names a group managed elsewhere, or when the module creates no instances. When false and no name is given, the instances use the RDS default group."
+  description = "(optional) Create the module's instance parameter group. Set to false when `db_instance_parameter_group_name` names a group managed elsewhere, or when the module creates no instances. When false and no name is given, the instances are attached to the RDS default group, `default.<family>`. RDS rejects deleting the module's group while it is still attached, so on an existing cluster set `apply_immediately` to true for this change, or move to the new group in an earlier apply. See the README."
   default     = true
   type        = bool
 }

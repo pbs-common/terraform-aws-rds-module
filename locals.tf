@@ -56,9 +56,18 @@ locals {
   db_cluster_dns        = var.create_dns ? aws_route53_record.primary[0].fqdn : local.dns_target
   db_cluster_reader_dns = var.create_dns ? aws_route53_record.reader[0].fqdn : local.reader_dns_target
 
-  # With neither a name nor a module-created group, these are null and RDS uses its default group
-  db_cluster_parameter_group_name  = var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name : one(aws_rds_cluster_parameter_group.this[*].name)
-  db_instance_parameter_group_name = var.db_instance_parameter_group_name != null ? var.db_instance_parameter_group_name : one(aws_db_parameter_group.this[*].name)
+  # With neither a name nor a module-created group, fall back to the RDS default group by name.
+  # Null would leave an existing cluster on its current group, as these attributes are computed.
+  db_cluster_parameter_group_name = (
+    var.db_cluster_parameter_group_name != null ? var.db_cluster_parameter_group_name :
+    var.create_db_cluster_parameter_group ? aws_rds_cluster_parameter_group.this[0].name :
+    "default.${local.parameter_group_family}"
+  )
+  db_instance_parameter_group_name = (
+    var.db_instance_parameter_group_name != null ? var.db_instance_parameter_group_name :
+    var.create_db_instance_parameter_group ? aws_db_parameter_group.this[0].name :
+    "default.${local.parameter_group_family}"
+  )
 
   creator = "terraform"
 
