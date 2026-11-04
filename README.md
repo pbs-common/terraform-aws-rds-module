@@ -7,7 +7,7 @@
 Use this URL for the source of the module. See the usage examples below for more details.
 
 ```hcl
-github.com/pbs/terraform-aws-rds-module?ref=2.5.1
+github.com/pbs/terraform-aws-rds-module?ref=x.y.z
 ```
 
 ### Alternative Installation Methods
@@ -28,7 +28,7 @@ Integrate this module like so:
 
 ```hcl
 module "rds" {
-  source = "github.com/pbs/terraform-aws-rds-module?ref=2.5.1"
+  source = "github.com/pbs/terraform-aws-rds-module?ref=x.y.z"
 
   # Required Parameters
   private_hosted_zone = "example.local"
@@ -77,8 +77,10 @@ The master password is set once, when the cluster is created — from `db_admin_
 
 An existing cluster often has settings the module would otherwise replace:
 
-- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached. `db_cluster_parameter_group_name` does the same for the cluster parameter group.
+- `db_instance_parameter_group_name` attaches an existing instance parameter group (e.g. `default.aurora-postgresql16`) instead of the module's own. The module still creates its group, unattached, unless `create_db_instance_parameter_group` is false. `db_cluster_parameter_group_name` and `create_db_cluster_parameter_group` do the same for the cluster parameter group. With a creation flag off and no name given, the RDS default group, `default.<family>`, is attached.
 - `extra_security_group_ids` attaches more security groups alongside the module's. A cluster that already has other groups must list them here, or they are detached.
+
+> :warning: Turning off `create_db_cluster_parameter_group` or `create_db_instance_parameter_group` on an existing cluster deletes the module's group in the same apply that moves the cluster or instances off it. RDS rejects the deletion while the group is still attached, and with `apply_immediately` false the move can wait for the maintenance window. Set `apply_immediately` to true for that apply, or move to the new group first by setting the name in one apply and turning off creation in the next.
 
 ### Availability zones
 
@@ -90,7 +92,7 @@ An existing cluster often has settings the module would otherwise replace:
 
 If this repo is added as a subtree, then the version of the module should be close to the version shown here:
 
-`2.5.1`
+`x.y.z`
 
 Note, however that subtrees can be altered as desired within repositories.
 
@@ -114,7 +116,7 @@ Below is automatically generated documentation on this Terraform module using [t
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.67.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.71.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.9.1 |
 
 ## Modules
@@ -181,6 +183,8 @@ No modules.
 | <a name="input_backup_retention_period"></a> [backup\_retention\_period](#input\_backup\_retention\_period) | Backup retention period | `number` | `7` | no |
 | <a name="input_cluster_performance_insights_enabled"></a> [cluster\_performance\_insights\_enabled](#input\_cluster\_performance\_insights\_enabled) | (optional) Enable Performance Insights at the cluster level. Every instance inherits it, including readers that Aurora auto scaling adds outside Terraform. Uses `performance_insights_kms_key_id` and `performance_insights_retention_period`. Unlike the instance setting this attribute is not computed, so null turns cluster-level Performance Insights off on a cluster that has it. | `bool` | `null` | no |
 | <a name="input_copy_tags_to_snapshot"></a> [copy\_tags\_to\_snapshot](#input\_copy\_tags\_to\_snapshot) | Whether to copy tags to snapshots | `bool` | `true` | no |
+| <a name="input_create_db_cluster_parameter_group"></a> [create\_db\_cluster\_parameter\_group](#input\_create\_db\_cluster\_parameter\_group) | (optional) Create the module's cluster parameter group. Set to false when `db_cluster_parameter_group_name` names a group managed elsewhere, so the module doesn't create one that goes unattached. When false and no name is given, the cluster is attached to the RDS default group, `default.<family>`. RDS rejects deleting the module's group while it is still attached, so on an existing cluster set `apply_immediately` to true for this change, or move to the new group in an earlier apply. See the README. | `bool` | `true` | no |
+| <a name="input_create_db_instance_parameter_group"></a> [create\_db\_instance\_parameter\_group](#input\_create\_db\_instance\_parameter\_group) | (optional) Create the module's instance parameter group. Set to false when `db_instance_parameter_group_name` names a group managed elsewhere, or when the module creates no instances. When false and no name is given, the instances are attached to the RDS default group, `default.<family>`. RDS rejects deleting the module's group while it is still attached, so on an existing cluster set `apply_immediately` to true for this change, or move to the new group in an earlier apply. See the README. | `bool` | `true` | no |
 | <a name="input_create_dns"></a> [create\_dns](#input\_create\_dns) | Whether to create a DNS record | `bool` | `true` | no |
 | <a name="input_create_writer"></a> [create\_writer](#input\_create\_writer) | (optional) Create a writer instance in the cluster. Set to false to manage a cluster whose instances are managed elsewhere, or an Aurora Serverless v2 cluster that has no instances of its own. A cluster with no writer and `reader_count = 0` has no instances and cannot serve traffic. | `bool` | `true` | no |
 | <a name="input_database_insights_mode"></a> [database\_insights\_mode](#input\_database\_insights\_mode) | (optional) Database Insights mode for the cluster: `standard` or `advanced`. `advanced` requires `cluster_performance_insights_enabled = true` and a `performance_insights_retention_period` of at least 465. When null the mode is left unmanaged. | `string` | `null` | no |
@@ -191,7 +195,7 @@ No modules.
 | <a name="input_db_cluster_parameter_group_resource_name"></a> [db\_cluster\_parameter\_group\_resource\_name](#input\_db\_cluster\_parameter\_group\_resource\_name) | Name of the aws\_rds\_cluster\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_cluster_parameters"></a> [db\_cluster\_parameters](#input\_db\_cluster\_parameters) | Optional key-value map of parameters to override for the cluster parameter group | `map(any)` | `{}` | no |
 | <a name="input_db_instance_parameter_group_description"></a> [db\_instance\_parameter\_group\_description](#input\_db\_instance\_parameter\_group\_description) | Description for the RDS instance parameter group. Defaults to a generated value. | `string` | `null` | no |
-| <a name="input_db_instance_parameter_group_name"></a> [db\_instance\_parameter\_group\_name](#input\_db\_instance\_parameter\_group\_name) | (optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached. | `string` | `null` | no |
+| <a name="input_db_instance_parameter_group_name"></a> [db\_instance\_parameter\_group\_name](#input\_db\_instance\_parameter\_group\_name) | (optional) Name of an existing DB parameter group to attach to the instances instead of the one the module creates, e.g. `default.aurora-postgresql16`. The module's own group is still created, but left unattached, unless `create_db_instance_parameter_group` is false. | `string` | `null` | no |
 | <a name="input_db_instance_parameter_group_resource_name"></a> [db\_instance\_parameter\_group\_resource\_name](#input\_db\_instance\_parameter\_group\_resource\_name) | Name of the aws\_db\_parameter\_group resource. Defaults to a generated value. | `string` | `null` | no |
 | <a name="input_db_instance_parameters"></a> [db\_instance\_parameters](#input\_db\_instance\_parameters) | Optional key-value map of parameters to override for the instance parameter group | `map(any)` | `{}` | no |
 | <a name="input_deletion_protection"></a> [deletion\_protection](#input\_deletion\_protection) | Deletion protection | `bool` | `true` | no |
